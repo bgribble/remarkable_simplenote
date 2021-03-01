@@ -21,7 +21,7 @@ class Remarkable:
         self.rm_api.renew_token()
 
     def get_meta(self):
-        self.rm_meta = self.rm_api.get_meta_items()
+        self.rm_meta = list(self.rm_api.get_meta_items())
 
     def toc(self):
         if not self.rm_meta:
@@ -59,10 +59,10 @@ class Remarkable:
         content_path = f'{content_dir}/{item_id}.pdf'
         doc = ZipDocument(doc=content_path)
         folder = self.get_or_create_folder(mapping_info.remote_path)
-        doc.VissibleName = get_pdf_title(content_path) 
-        doc.Version = version
+        doc.metadata['VissibleName'] = get_pdf_title(content_path) 
+        doc.metadata['Version'] = version
         self.rm_api.upload(doc, folder)
-        print(f"push: new document '{doc.VissibleName}' to {mapping_info.remote_path})")
+        print(f"push: new document '{doc.metadata['VissibleName']}' to {mapping_info.remote_path})")
         mapping_info.remote_id = doc.ID
         return mapping_info
 
@@ -88,6 +88,7 @@ class Remarkable:
             if parent:
                 matched_folder.Parent = parent.ID
             self.rm_api.create_folder(matched_folder)
+            self.rm_meta.append(matched_folder)
             children = {}
         else:
             children = subtree[matched_folder]

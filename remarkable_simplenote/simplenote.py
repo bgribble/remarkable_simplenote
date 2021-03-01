@@ -34,7 +34,7 @@ def convert_to_pdf(source_path, dest_dir, note_id):
     if config.get('folder_strategy') == 'jd_title':
         first_word = note_title.split(' ')[0].strip()
         if re.match('^[0-9.]+$', first_word):
-            mapping.remote_path = first_word.split('.')
+            mapping.remote_path = first_word.split('.')[:2]
         else:
             mapping.remote_path = config.get('folder_bucket', '')
     else:

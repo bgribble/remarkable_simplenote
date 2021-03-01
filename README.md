@@ -7,6 +7,8 @@ There is no perfect mapping between reMarkable notebooks and
 Simplenote notes, so there's some built-in opinions about how
 the sync works. 
 
+## This is WIP! Not ready for use
+
 ### Key tools
 
 * Simplenote API: the `simplenote` Python package
