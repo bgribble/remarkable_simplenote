@@ -31,6 +31,18 @@ def main():
         '--path', help="Local config/cache folder",
         default=os.path.expanduser("~/.remarkable_simplenote")
     )
+    parser.add_argument(
+        '--force-pull', help="Pull remote content even if unneeded",
+        action="store_true",
+    )
+    parser.add_argument(
+        '--force-sync', help="Convert pull to push even if unneeded",
+        action="store_true",
+    )
+    parser.add_argument(
+        '--force-push', help="Push data to remote even if unneeded",
+        action="store_true",
+    )
     cmdline = vars(parser.parse_args())
     
     config = load_config(cmdline['path'])
@@ -44,16 +56,21 @@ def main():
             sync_manager=sync
         )
         snote.connect()
-        snote.pull()
+        snote.pull(force=cmdline['force_pull'])
 
-        sync.local_sync(SimpleNote, Remarkable)
+    sync.local_sync(SimpleNote, Remarkable, force=cmdline['force_sync'])
+
+    if 'remarkable' in cmdline.get('pull'):
+        print("pull: reMarkable pull not implemented yet")
 
     if 'remarkable' in cmdline.get('push'):
-        print("pushing for remarkable")
         remark = Remarkable(sync_manager=sync)
         remark.connect()
-        remark.push()
-    
+        remark.push(force=cmdline['force_push'])
+   
+    if 'simplenote' in cmdline.get('push'):
+        print("push: Simplenote push not implemented yet")
+
     print("done.")
 
 if __name__ == '__main__':

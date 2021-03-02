@@ -15,15 +15,19 @@ def get_pdf_title(path):
 
 def write_pdf(*, title, body, destination):
     pdf_engine = config.get('pdf_engine') 
+    pdf_engine_opts = config.get('pdf_engine_opts').split(" ") 
+    
     pandoc_cmd = [
         'pandoc',
         '-f', 'markdown',
-        f'--pdf-engine={pdf_engine}',
         '-o', destination,
+        f'--pdf-engine={pdf_engine}',
+        *[f'--pdf-engine-opt={opt}' for opt in pdf_engine_opts],
         '-'
     ]
+    print("write_pdf:", pandoc_cmd)
 
-    with Popen(pandoc_cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE) as p:
+    with Popen(pandoc_cmd, stdin=PIPE) as p:
         p.communicate(body.encode('utf-8'))
 
     exiftool_cmd = [

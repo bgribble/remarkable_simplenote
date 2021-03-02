@@ -99,9 +99,12 @@ class Remarkable:
             return matched_folder
 
 
-    def push(self):
+    def push(self, force=False):
         local_toc = self.sync_manager.local_toc(Remarkable, "push")
         cloud_toc = self.toc()
+
+        if force:
+            print("push: Force push requested")
 
         for item_id, local_version in local_toc.items():
             mapping_info = self.sync_manager.get_mapping(
@@ -114,8 +117,9 @@ class Remarkable:
                 )
             else:
                 cloud_ver = cloud_toc.get(mapping_info.remote_id)
-                if not cloud_ver or local_version > cloud_ver:
+                if not cloud_ver or local_version > cloud_ver or force:
                     # push update
+                    print("push: remarkable update not done yet")
                     pass
 
             self.sync_manager.update_mapping(

@@ -73,7 +73,10 @@ class SimpleNote:
         else:
             return None
 
-    def pull(self):
+    def pull(self, force=False):
+        if force:
+            print("pull: Force pull requested")
+
         pull_base = self.sync_mgr.pull_dir(SimpleNote)
 
         remote_toc = self.toc()
@@ -81,7 +84,7 @@ class SimpleNote:
 
         for note_id, version in remote_toc.items():
             local_version = local_toc.get(note_id, 0)
-            if version > local_version:
+            if version > local_version or force:
                 noteinfo, status = self.sn_api.get_note(note_id, version)
                 title = noteinfo.get('content').split('\n')[0]
                 print(f"pull: fetched '{title}' ver {noteinfo.get('version')}")
@@ -90,7 +93,7 @@ class SimpleNote:
                 if not os.path.exists(localdir):
                     os.mkdir(localdir)
                 localpath = f'{pull_base}/{note_id}/{version}'
-                with open(localpath, 'w+') as notefile:
+                with open(localpath, 'w') as notefile:
                     notefile.write(json.dumps(noteinfo, indent=4))
 
     def push(self):

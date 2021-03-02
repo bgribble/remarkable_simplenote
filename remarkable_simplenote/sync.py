@@ -80,7 +80,7 @@ class SyncManager:
 
         return toc
 
-    def local_sync(self, pull_type, push_type):
+    def local_sync(self, pull_type, push_type, force=False):
         pull_base = self.pull_dir(pull_type)
         push_base = self.push_dir(push_type)
         pull_toc = self.local_toc(pull_type, "pull")
@@ -88,9 +88,12 @@ class SyncManager:
 
         converter = pull_type.converters.get(push_type.__name__)
 
+        if force:
+            print("sync: Force sync requested ({pull_type.__name__} --> {push_type.__name__}")
+
         for item_id, version in pull_toc.items():
             push_version = push_toc.get(item_id, 0)
-            if version <= push_version:
+            if version <= push_version and not force:
                 continue
 
             push_dir = f'{push_base}/{item_id}'
