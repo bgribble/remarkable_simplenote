@@ -3,16 +3,18 @@ import json
 from .conf import config
 
 class SyncMapping:
-    def __init__(self, *, remote_path=None, remote_id=None):
+    def __init__(self, *, remote_path=None, remote_id=None, remote_version=None):
         self.remote_path = remote_path
         self.remote_id = remote_id
+        self.remote_version = remote_version
 
     def to_file(self, path):
         with open(path, "w") as mapfile:
             mapfile.write(
                 json.dumps(dict(
                     remote_path=self.remote_path,
-                    remote_id=self.remote_id
+                    remote_id=self.remote_id,
+                    remote_version=self.remote_version
                 ), indent=4)
             )
 
