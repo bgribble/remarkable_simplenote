@@ -57,17 +57,25 @@ class Remarkable:
     def upload_document(self, local_id, local_version, mapping_info):
         content_dir = self.sync_manager.push_dir(Remarkable) + f'/{local_id}/{local_version}'
         content_path = f'{content_dir}/{local_id}.pdf'
-        current_version = mapping_info.remote_version or 1
+        
+        need_delete = False
+        if mapping_info.remote_version:
+            # reMarkable won't sync updates, need to delete 
+            # and re-add
+            print(f"push: deleting remote {mapping_info.remote_id}")
+            to_delete = Document(ID=mapping_info.remote_id, Version=mapping_info.remote_version)
+            self.rm_api.delete(to_delete)
 
-        doc = ZipDocument(doc=content_path, _id=mapping_info.remote_id)
+        doc = ZipDocument(doc=content_path)
+    
         folder = self.get_or_create_folder(mapping_info.remote_path)
         doc.metadata['VissibleName'] = get_pdf_title(content_path) 
-        doc.metadata['version'] = current_version + 1
+        doc.metadata['version'] = 1
         print(f"push: document '{doc.metadata['VissibleName']}' {local_id} to {mapping_info.remote_path})")
-        print(f"version: {current_version + 1}, folder: {folder.VissibleName} {folder.ID}")
+        print(f"folder: {folder.VissibleName} {folder.ID}")
         self.rm_api.upload(doc, folder)
         mapping_info.remote_id = doc.ID
-        mapping_info.remote_version = current_version + 1
+        mapping_info.remote_version = 1
         return mapping_info
 
     def get_or_create_folder(self, path, parent=None, subtree=None):
