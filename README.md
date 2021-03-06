@@ -7,7 +7,12 @@ There is no perfect mapping between reMarkable notebooks and
 Simplenote notes, so there's some built-in opinions about how
 the sync works.
 
-## This is WIP! Not ready for use
+## Status
+
+The "Basic" case below works; that is, pull from simplenote and sync to 
+reMarkable. I'm going to start on some of the offline OCR workflows next,
+but at least now I get PDF versions of all my Simplenote notes on the 
+reMarkable \o/
 
 ### Key tools
 
