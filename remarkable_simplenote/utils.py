@@ -27,7 +27,7 @@ def write_pdf(*, title, body, destination):
     ]
     print("write_pdf:", pandoc_cmd)
 
-    with Popen(pandoc_cmd, stdin=PIPE) as p:
+    with Popen(pandoc_cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE) as p:
         p.communicate(body.encode('utf-8'))
 
     exiftool_cmd = [

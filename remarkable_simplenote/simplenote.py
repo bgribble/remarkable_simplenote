@@ -19,7 +19,6 @@ def convert_to_pdf(source_path, dest_dir, note_id):
         note = json.loads(notefile.read())
 
     if note.get("deleted"):
-        print(f"convert: skipping deleted note {note_id}")
         return
 
     if not os.path.exists(dest_dir):

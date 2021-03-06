@@ -7,6 +7,7 @@ from rmapy.api import Client
 from rmapy.document import Document, ZipDocument
 from rmapy.folder import Folder
 from .conf import config
+from .sync import SyncMapping
 from .utils import get_pdf_title
 
 class Remarkable:
@@ -54,28 +55,31 @@ class Remarkable:
     def pull(self):
         pass
 
-    def upload_document(self, local_id, local_version, mapping_info):
-        content_dir = self.sync_manager.push_dir(Remarkable) + f'/{local_id}/{local_version}'
+    def upload_document(self, local_id, local_version, cloud_id, cloud_version, path):
+        content_dir = (
+            self.sync_manager.push_dir(Remarkable) 
+            + f'/{local_id}/{local_version}'
+        )
         content_path = f'{content_dir}/{local_id}.pdf'
         
-        need_delete = False
-        if mapping_info.remote_version:
+        if cloud_version:
             # reMarkable won't sync updates, need to delete 
             # and re-add
-            print(f"push: deleting remote {mapping_info.remote_id}")
-            to_delete = Document(ID=mapping_info.remote_id, Version=mapping_info.remote_version)
+            to_delete = Document(ID=cloud_id, Version=cloud_version)
             self.rm_api.delete(to_delete)
 
         doc = ZipDocument(doc=content_path)
     
-        folder = self.get_or_create_folder(mapping_info.remote_path)
+        folder = self.get_or_create_folder(path)
         doc.metadata['VissibleName'] = get_pdf_title(content_path) 
         doc.metadata['version'] = 1
+        mapping_info = SyncMapping(
+            remote_id=doc.ID,
+            remote_version = 1,
+            remote_path=path
+        )
         print(f"push: document '{doc.metadata['VissibleName']}' {local_id} to {mapping_info.remote_path})")
-        print(f"folder: {folder.VissibleName} {folder.ID}")
         self.rm_api.upload(doc, folder)
-        mapping_info.remote_id = doc.ID
-        mapping_info.remote_version = 1
         return mapping_info
 
     def get_or_create_folder(self, path, parent=None, subtree=None):
@@ -125,10 +129,17 @@ class Remarkable:
             cloud_ver = None
             if mapping_info.remote_id:
                 cloud_ver = cloud_toc.get(mapping_info.remote_id)
+                local_cloud_ver = mapping_info.remote_version
 
-            if not cloud_ver or local_version > cloud_ver or force:
+            if not cloud_ver or local_cloud_ver > cloud_ver or force:
+                if cloud_ver and cloud_ver > local_cloud_ver:
+                    print("push: pushing even though cloud version more recent than local")
+                    print(f"      {item_id}/{local_version} < {cloud_ver}")
+
                 mapping_info = self.upload_document(
-                    item_id, local_version, mapping_info
+                    item_id, local_version,
+                    mapping_info.remote_id, cloud_ver,
+                    mapping_info.remote_path
                 )
 
             self.sync_manager.update_mapping(
